@@ -134,9 +134,9 @@ plt.tight_layout()
 plt.savefig('per_class_accuracy.png', dpi=300)
 print("每类准确率图已保存: per_class_accuracy.png")
 
-correct_probs = all_probs[np.arange(len(all_labels)), all_labels]
-conf_correct = correct_probs[all_preds == all_labels]
-conf_wrong = correct_probs[all_preds != all_labels]
+max_probs = np.max(all_probs, axis=1)
+conf_correct = max_probs[all_preds == all_labels]
+conf_wrong = max_probs[all_preds != all_labels]
 
 plt.figure(figsize=(10, 6))
 plt.hist(conf_correct, bins=50, alpha=0.7, label='正确', color='green')
@@ -147,6 +147,12 @@ plt.title('预测置信度分布')
 plt.legend()
 plt.tight_layout()
 plt.savefig('confidence_distribution.png', dpi=300)
+avg_conf_correct = np.mean(conf_correct) if len(conf_correct) > 0 else 0
+avg_conf_wrong = np.mean(conf_wrong) if len(conf_wrong) > 0 else 0
+print(f"正确样本平均置信度: {avg_conf_correct:.4f}")
+print(f"错误样本平均置信度: {avg_conf_wrong:.4f}")
+con_wrong_high = np.mean(conf_wrong > 0.9) if len(conf_wrong) > 0 else 0
+print(f"错误样本中高置信度(>0.9)占比: {con_wrong_high*100:.1f}%")
 print("置信度分布图已保存: confidence_distribution.png")
 
 plt.figure(figsize=(10, 6))

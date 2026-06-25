@@ -89,13 +89,13 @@ class ResNet(nn.Module):
         return x
 
 def create_resnet34(num_classes=43, pretrained=True):
-    # 方法一：手写结构 + timm 加载权重（推荐，兼顾理解与性能）
+    # 手写结构、timm加载权重
     model = ResNet(BasicBlock, [3, 4, 6, 3], num_classes=1000)  # ResNet-34 配置[reference:2]
     
     if pretrained:
-        # 从 timm 加载官方预训练权重[reference:3]
+        
         pretrained_model = timm.create_model('resnet34', pretrained=True, num_classes=0)
-        # 将预训练权重加载到你的手写模型中（注意：键名需要匹配）
+
         model.load_state_dict(pretrained_model.state_dict(), strict=False)
     
     # 替换最后一层全连接层为 43 类
