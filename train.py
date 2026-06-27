@@ -16,7 +16,7 @@ train_loader, val_loader, total = create_train_val_loaders(
     batch_size=64
 )
 
-model = create_resnet34(num_classes=43, pretrained=True)
+model = create_resnet34(num_classes=43, pretrained=False)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()

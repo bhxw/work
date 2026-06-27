@@ -20,7 +20,7 @@ class BasicBlock(nn.Module):
         self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, 
                                stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_channels)
-        self.downsample = downsample  # 当维度不匹配时用于调整捷径
+        self.downsample = downsample  #当维度不匹配时用于调整捷径
         
     def forward(self, x):
         identity = x  # 保存输入，用于残差连接
