@@ -7,14 +7,13 @@
 ```
 work/
 ├── src/
-│   ├── model.py          # ResNet-34 手写实现 (BasicBlock + ResNet)
+│   ├── model.py          # ResNet-34 手写实现 (BasicBlock+ResNet)
 │   └── data_loader.py    # GTSRB 数据集加载与预处理
 ├── train.py              # 训练脚本
 ├── test.py               # 全面测试评估脚本（输出各类评价指标与图表）
 ├── predict.py            # 单张图片预测脚本
 ├── plot_training_curves.py  # 训练损失/准确率对比曲线生成
 ├── best_model.pth        # 训练好的模型权重
-├── requirements.txt      # 依赖列表
 ├── README.md
 └── data/
     ├── GTSRB/
