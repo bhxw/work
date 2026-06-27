@@ -1,15 +1,7 @@
 """
 单张图片预测脚本
-用法: python predict.py <图片路径>
-支持格式: 任意 PIL 可读格式 ppm jpg png bmp jpeg tiff 等
-
-示例:
-  python predict.py test.png
-  python predict.py data/GTSRB/Final_Test/Images/00000.ppm
-  python predict.py my_photo.jpg --save
-  python predict.py my_photo.jpg --topk 10
+用法: python predict.py <图片路径> [--topk K] [--model path] [--save]
 """
-
 import os
 import sys
 import argparse
@@ -22,59 +14,20 @@ BASE_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE_DIR))
 from src.model import create_resnet34
 
-# GTSRB 43 类交通标志名称映射
 GTSRB_CLASSES = [
-    "限速 20km/h",
-    "限速 30km/h",
-    "限速 50km/h",
-    "限速 60km/h",
-    "限速 70km/h",
-    "限速 80km/h",
-    "解除限速 80km/h",
-    "限速 100km/h",
-    "限速 120km/h",
-    "禁止超车",
-    "禁止 3.5吨以上车辆超车",
-    "前方交叉口优先通行",
-    "优先道路",
-    "让行",
-    "停车让行",
-    "禁止所有车辆通行",
-    "禁止 3.5吨以上车辆通行",
-    "禁止驶入",
-    "注意危险",
-    "左转弯危险",
-    "右转弯危险",
-    "连续弯路",
-    "路面不平",
-    "路面湿滑",
-    "右侧变窄",
-    "道路施工",
-    "交通信号灯",
-    "注意行人",
-    "注意儿童",
-    "注意自行车",
-    "注意冰雪",
-    "注意野生动物",
-    "解除所有限速与禁止超车",
-    "前方右转",
-    "前方左转",
-    "直行",
-    "直行或右转",
-    "直行或左转",
-    "靠右行驶",
-    "靠左行驶",
-    "环岛行驶",
-    "解除禁止超车",
-    "解除禁止 3.5吨以上车辆超车",
+    "限速 20km/h", "限速 30km/h", "限速 50km/h", "限速 60km/h", "限速 70km/h",
+    "限速 80km/h", "解除限速 80km/h", "限速 100km/h", "限速 120km/h",
+    "禁止超车", "禁止 3.5吨以上车辆超车", "前方交叉口优先通行", "优先道路",
+    "让行", "停车让行", "禁止所有车辆通行", "禁止 3.5吨以上车辆通行", "禁止驶入",
+    "注意危险", "左转弯危险", "右转弯危险", "连续弯路", "路面不平", "路面湿滑",
+    "右侧变窄", "道路施工", "交通信号灯", "注意行人", "注意儿童", "注意自行车",
+    "注意冰雪", "注意野生动物", "解除所有限速与禁止超车", "前方右转", "前方左转",
+    "直行", "直行或右转", "直行或左转", "靠右行驶", "靠左行驶", "环岛行驶",
+    "解除禁止超车", "解除禁止 3.5吨以上车辆超车",
 ]
 
 
 def preprocess_image(img_path):
-    """
-    加载任意格式图片，转为 RGB，Resize 到 224x224，归一化
-    返回 input_tensor 和原始 PIL 图片
-    """
     if not os.path.isfile(img_path):
         raise FileNotFoundError(f"图片文件不存在: {img_path}")
 
@@ -93,7 +46,6 @@ def preprocess_image(img_path):
 
 
 def predict_image(model, img_path, device, topk=5):
-    """对单张图片推理，返回预测类别、置信度、Top-K 列表和原始图片"""
     input_tensor, original = preprocess_image(img_path)
     input_tensor = input_tensor.to(device)
 
@@ -112,12 +64,11 @@ def predict_image(model, img_path, device, topk=5):
 
 
 def display_results(pred_id, confidence, topk_ids, topk_confs, original_img, img_path, topk=5):
-    """打印预测结果"""
     img_name = os.path.basename(img_path)
     original_size = original_img.size
 
     print(f"\n图片: {img_name}  尺寸: {original_size[0]}x{original_size[1]}")
-    print(f"预测类别: {pred_id} — {GTSRB_CLASSES[pred_id]}")
+    print(f"预测类别: {pred_id} - {GTSRB_CLASSES[pred_id]}")
     print(f"置信度: {confidence:.4f}  {confidence*100:.2f}%")
     print()
 
@@ -159,10 +110,8 @@ def display_results(pred_id, confidence, topk_ids, topk_confs, original_img, img
 
 
 def save_visualization(result, original_img, save_path="prediction_result.png"):
-    """保存可视化结果图"""
     try:
         import matplotlib.pyplot as plt
-
         for font_name in ['SimSun', 'SimHei', 'Microsoft YaHei', 'DejaVu Sans']:
             try:
                 plt.rcParams['font.sans-serif'] = [font_name]
@@ -173,7 +122,6 @@ def save_visualization(result, original_img, save_path="prediction_result.png"):
                 continue
 
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
-
         ax1.imshow(original_img)
         ax1.set_title(f"预测: {result['predicted_class_name']}\n"
                       f"类别 {result['predicted_class_id']} | "
@@ -204,14 +152,8 @@ def save_visualization(result, original_img, save_path="prediction_result.png"):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="GTSRB 单张交通标志图片识别",
-        epilog="""示例:
-  python predict.py test.png
-  python predict.py data/GTSRB/Final_Test/Images/00000.ppm
-  python predict.py my_photo.jpg --topk 10 --save"""
-    )
-    parser.add_argument("image", help="输入图片路径 支持 ppm jpg png bmp tiff 等")
+    parser = argparse.ArgumentParser(description="GTSRB 单张交通标志图片识别")
+    parser.add_argument("image", help="输入图片路径")
     parser.add_argument("--topk", type=int, default=5, help="显示前 K 个预测结果 默认 5")
     parser.add_argument("--model", default=None, help="模型权重路径 默认 best_model.pth")
     parser.add_argument("--save", action="store_true", help="保存可视化结果图")
@@ -219,16 +161,12 @@ def main():
                         help="结果图保存路径 默认 prediction_result.png")
 
     args = parser.parse_args()
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"使用设备: {device}")
 
     model_path = args.model or str(BASE_DIR / "best_model.pth")
     if not os.path.isfile(model_path):
-        raise FileNotFoundError(
-            f"模型文件不存在: {model_path}\n"
-            f"请先运行 train.py 训练模型，或通过 --model 指定权重路径"
-        )
+        raise FileNotFoundError(f"模型文件不存在: {model_path}\n请先运行 train.py 训练模型")
 
     print(f"加载模型: {model_path}")
     model = create_resnet34(num_classes=43, pretrained=False)

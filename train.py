@@ -12,8 +12,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"使用设备: {device}")
 
 train_loader, val_loader, total = create_train_val_loaders(
-    data_root=str(DATA_DIR),
-    batch_size=64
+    data_root=str(DATA_DIR), batch_size=64
 )
 
 model = create_resnet34(num_classes=43, pretrained=False)
@@ -34,7 +33,6 @@ for epoch in range(num_epochs):
 
     for images, labels in train_loader:
         images, labels = images.to(device), labels.to(device)
-
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)

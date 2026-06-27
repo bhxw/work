@@ -12,14 +12,10 @@ print(f"数据路径: {DATA_DIR}")
 
 
 class GTSRBTrainDataset(Dataset):
-    """
-    手动读取 GTSRB 训练集，文件夹名即类别标签 0~42
-    """
     def __init__(self, root_dir, transform=None):
         self.root_dir = root_dir
         self.transform = transform
         self.samples = []
-
         for class_id in range(43):
             folder_name = str(class_id).zfill(5)
             folder_path = os.path.join(root_dir, folder_name)
@@ -29,7 +25,6 @@ class GTSRBTrainDataset(Dataset):
                 if file_name.endswith('.ppm'):
                     img_path = os.path.join(folder_path, file_name)
                     self.samples.append((img_path, class_id))
-
         print(f"训练集共加载 {len(self.samples)} 张图片")
 
     def __len__(self):
@@ -63,9 +58,6 @@ def get_val_transform():
 
 
 def create_train_val_loaders(data_root, batch_size=64, val_ratio=0.2, num_workers=0):
-    """
-    创建训练集和验证集的 DataLoader，分层抽样保证类别分布一致
-    """
     from sklearn.model_selection import train_test_split
     from torch.utils.data import Subset
 
@@ -87,7 +79,6 @@ def create_train_val_loaders(data_root, batch_size=64, val_ratio=0.2, num_worker
                               num_workers=num_workers, pin_memory=True)
     val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False,
                             num_workers=num_workers, pin_memory=True)
-
     return train_loader, val_loader, len(train_dataset)
 
 
@@ -95,17 +86,12 @@ import pandas as pd
 
 
 class GTSRBTestDataset(Dataset):
-    """
-    读取 GTSRB 测试集，从 CSV 获取图片名和标签
-    """
     def __init__(self, img_dir, csv_path, transform=None):
         self.img_dir = img_dir
         self.transform = transform
-
         df = pd.read_csv(csv_path, sep=';')
         self.filenames = df['Filename'].values
         self.labels = df['ClassId'].values
-
         print(f"测试集共 {len(self.filenames)} 张图片")
 
     def __len__(self):
